@@ -1,7 +1,7 @@
 <template>
   <div id="app">
       <SearchBar v-on:start-search="search" />
-      <Jobs v-bind:jobs="jobs" />
+      <Jobs />
   </div>
 </template>
 
@@ -17,7 +17,6 @@ export default {
   },
 data() {  
   return {
-    jobs: null
   }
 },
 methods: {
@@ -25,15 +24,10 @@ methods: {
     const { title, location, fullTime } = newSearch;
     let fullTimeSearch = fullTime ? 'on' : 'off';
     fetch(`https://cors-anywhere.herokuapp.com/https://jobs.github.com/positions.json?search=${title}&full_time=${fullTimeSearch}&location=${location}`)
-    .then((res) => res.json())
+    .then( res => res.json())
     .then((data) => this.jobs = data);
   }
 },
-created() {
-  fetch('https://cors-anywhere.herokuapp.com/https://jobs.github.com/positions.json?page=1')
-  .then((res) => res.json())
-  .then((data) => this.jobs = data);
-}
 }
 </script>
 
