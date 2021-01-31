@@ -1,47 +1,62 @@
 <template>
-<div v-if="jobs.length">
-    <div v-for="job in filterJobs(this.jobCount)" v-bind:key="job.id">
-    <!-- <div v-for="job in jobs" v-bind:key="job.id"> -->
+  <div class="jobs">
+    <SearchBar v-on:start-search="search" />
+    <div v-if="jobs.length">
+      <div v-for="job in filteredJobs" v-bind:key="job.id">
         <Job v-bind:job="job" />
+      </div>
+      <button v-on:click="incrementJobCount">Load More</button>
     </div>
-    <button v-on:click="jobCount += 10">Load More</button>
-</div>
+  </div>
 </template>
 
 <script>
-import axios from 'axios'
+  import axios from 'axios'
 
-import Job from './Job'
+  import SearchBar from '../components/SearchBar'
+  import Job from './Job'
 
-export default {
+  export default {
     name: 'Jobs',
     components: {
-        Job
+      Job,
+      SearchBar
     },
-    data () {
-        return {
-            jobCount: 10,
-            jobs: []
-        }
+    data() {
+      return {
+        jobCount: 10,
+        jobs: []
+      }
+    },
+    computed: {
+      filteredJobs() {
+        return this.jobs.slice(0, this.jobCount);
+      }
     },
     methods: {
-        filterJobs: function (n) {
-            let filteredJobs = []
-            for(let i = 0; i < n; i++) {
-                filteredJobs.push(this.jobs[i])
-            }
-            return filteredJobs;
-        }
+      incrementJobCount() {
+        this.jobCount += 10;
+      },
+      search(newSearch) {
+        const { title, location, fullTime } = newSearch;
+        console.log('title: ' + title);
+        console.log('location: ' + location);
+        let fullTimeSearch = fullTime ? 'on' : 'off';
+        axios.get(`https://cors-anywhere.herokuapp.com/https://jobs.github.com/positions.json?search=${title}&full_time=${fullTimeSearch}&location=${location}`)
+          .then( response => {
+            this.jobs = response.data;
+          })
+          .catch( error => console.log(error) );
+      }
     },
     created() {
-        axios.get('https://cors-anywhere.herokuapp.com/https://jobs.github.com/positions.json?page=1')
-        .then( response => {
-            //console.log(response.data)
-            this.jobs = response.data;
+      axios.get('https://cors-anywhere.herokuapp.com/https://jobs.github.com/positions.json?page=1')
+        .then(response => {
+          this.jobs = response.data;
         })
-        .catch( error => console.log(error))
+        .catch(error => console.log(error))
     }
-}
+  }
 </script>
 
 <style lang="stylus" scoped>
